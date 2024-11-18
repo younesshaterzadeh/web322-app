@@ -1,0 +1,37 @@
+<div class="row">
+    {{#if data.post}}
+    <div class="col-md-8">
+        <h2>{{data.post.title}}</h2>
+        <img src="{{data.post.featureImage}}" alt="{{data.post.title}}" class="img-fluid">
+        <p><strong>Category:</strong> {{data.post.category}}</p>
+        <p><strong>Price:</strong> {{data.post.price}}</p>
+        <p><strong>Last Updated:</strong> {{data.post.postDate}}</p>
+        <p>{{data.post.body}}</p>
+    </div>
+    {{else}}
+    <div class="col-md-12 text-center">
+        <h2>{{data.message}}</h2>
+        <p>Please try another Post / Category</p>
+    </div>
+    {{/if}}
+
+    <div class="col-md-4">
+        {{#if data.posts}}
+        <h4>Items</h4>
+        <ul>
+            {{#each data.posts}}
+            <li><a href="/shop/{{id}}?category={{../viewingCategory}}">{{title}}</a></li>
+            {{/each}}
+        </ul>
+        {{/if}}
+
+        {{#if data.categories}}
+        <h4>Categories</h4>
+        <ul>
+            {{#each data.categories}}
+            <li><a href="/shop?category={{id}}">{{category}}</a></li>
+            {{/each}}
+        </ul>
+        {{/if}}
+    </div>
+</div>

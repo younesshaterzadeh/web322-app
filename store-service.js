@@ -26,13 +26,9 @@ module.exports.initialize = () => {
 
 module.exports.addItem = (itemData) => {
     return new Promise((resolve, reject) => {
-        if (!itemData.published) {
-            itemData.published = false;
-        } else {
-            itemData.published = true;
-        }
-
+        itemData.published = !!itemData.published;
         itemData.id = items.length + 1;
+        itemData.postDate = new Date().toISOString().split('T')[0];
         items.push(itemData);
         resolve(itemData);
     });
@@ -40,32 +36,31 @@ module.exports.addItem = (itemData) => {
 
 module.exports.getAllItems = () => {
     return new Promise((resolve, reject) => {
-        if (items.length === 0) {
-            reject('No items available');
-        } else {
+        if (items.length > 0) {
             resolve(items);
+        } else {
+            reject('No items found');
         }
     });
 };
 
-module.exports.getItemsByCategory = (category) => {
+module.exports.getCategories = () => {
     return new Promise((resolve, reject) => {
-        const filteredItems = items.filter(item => item.category == category);
-        if (filteredItems.length > 0) {
-            resolve(filteredItems);
+        if (categories.length > 0) {
+            resolve(categories);
         } else {
-            reject('No results found');
+            reject('No categories found');
         }
     });
 };
 
-module.exports.getItemsByMinDate = (minDateStr) => {
+module.exports.getPublishedItemsByCategory = (category) => {
     return new Promise((resolve, reject) => {
-        const filteredItems = items.filter(item => new Date(item.postDate) >= new Date(minDateStr));
+        const filteredItems = items.filter(item => item.published && (!category || item.category == category));
         if (filteredItems.length > 0) {
             resolve(filteredItems);
         } else {
-            reject('No results found');
+            reject('No items found');
         }
     });
 };
@@ -76,7 +71,7 @@ module.exports.getItemById = (id) => {
         if (item) {
             resolve(item);
         } else {
-            reject('No result found');
+            reject('No item found');
         }
     });
 };

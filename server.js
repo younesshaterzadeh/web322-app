@@ -1,54 +1,75 @@
 /*********************************************************************************
-* WEB322 – Assignment 03
-* I declare that this assignment is my own work in accordance with Seneca Academic Policy. No part
-* of this assignment has been copied manually or electronically from any other source
-* (including 3rd party web sites) or distributed to other students.
+*  WEB322 – Assignment 4
+*  I declare that this assignment is my own work in accordance with Seneca Academic Policy.
+*  No part of this assignment has been copied manually or electronically from any other source.
 *
-* Name: Younes Shaterzadeh Student ID: 187484233 Date: 11/1/2024
-*
-* Cyclic Web App URL: ________________________________________________________
-*
-* GitHub Repository URL: https://github.com/younesshaterzadeh/web322-app
-*
+*  Name: Younes Shaterzadeh
+*  Student ID: 187484233
+*  Date: 11/18/2024
+*  Cyclic Web App URL: <Your Cyclic App URL>
+*  GitHub Repository URL: https://github.com/younesshaterzadeh/web322-app
 ********************************************************************************/
 
+
 const express = require('express');
-const path = require('path');
+const exphbs = require('express-handlebars');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
 const storeService = require('./store-service');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Cloudinary configuration
 cloudinary.config({
-    cloud_name: 'dlymksw9u',
-    api_key: '289174169556625',
-    api_secret: 'DgUHzAqM-0p6sSMidzT2tdWj_io',
+    cloud_name: 'Your Cloud Name',
+    api_key: 'Your API Key',
+    api_secret: 'Your API Secret',
     secure: true
 });
 
 const upload = multer(); // No disk storage
 
-// Serve static files
+// Handlebars setup
+app.engine('.hbs', exphbs.engine({
+    extname: '.hbs',
+    helpers: {
+        navLink: function (url, options) {
+            return '<li class="nav-item"><a class="nav-link ' +
+                ((url === app.locals.activeRoute) ? 'active' : '') +
+                '" href="' + url + '">' + options.fn(this) + '</a></li>';
+        },
+        equal: function (lvalue, rvalue, options) {
+            if (lvalue != rvalue) {
+                return options.inverse(this);
+            } else {
+                return options.fn(this);
+            }
+        }
+    }
+}));
+app.set('view engine', '.hbs');
+
+// Middleware for active route
+app.use((req, res, next) => {
+    let route = req.path.substring(1);
+    app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
+    app.locals.viewingCategory = req.query.category;
+    next();
+});
+
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Middleware to parse URL-encoded data
-app.use(express.urlencoded({ extended: true }));
+// Routes
+app.get('/', (req, res) => res.redirect('/shop'));
 
-// Route for About page
-app.get('/about', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'about.html'));
-});
+app.get('/about', (req, res) => res.render('about'));
 
-// Route for Add Item page
-app.get('/items/add', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'addItem.html'));
-});
+app.get('/items/add', (req, res) => res.render('addItem'));
 
-// Route to handle POST request to add new item
 app.post('/items/add', upload.single('featureImage'), (req, res) => {
     if (req.file) {
         let streamUpload = (req) => {
@@ -81,46 +102,39 @@ app.post('/items/add', upload.single('featureImage'), (req, res) => {
     function processItem(imageUrl) {
         req.body.featureImage = imageUrl;
         storeService.addItem(req.body)
-            .then(() => {
-                res.redirect('/items');
-            })
-            .catch(err => {
-                res.status(500).send("Unable to add item");
-            });
+            .then(() => res.redirect('/items'))
+            .catch(err => res.status(500).send("Unable to add item"));
     }
 });
 
-// Route for fetching items (with optional filters)
 app.get('/items', (req, res) => {
-    if (req.query.category) {
-        storeService.getItemsByCategory(req.query.category)
-            .then((items) => res.json(items))
-            .catch((err) => res.json({ message: err }));
-    } else if (req.query.minDate) {
-        storeService.getItemsByMinDate(req.query.minDate)
-            .then((items) => res.json(items))
-            .catch((err) => res.json({ message: err }));
-    } else {
-        storeService.getAllItems()
-            .then((items) => res.json(items))
-            .catch((err) => res.json({ message: err }));
-    }
+    storeService.getAllItems()
+        .then(items => res.render('items', { items: items }))
+        .catch(err => res.render('items', { message: 'No results' }));
 });
 
-// Route for fetching an item by ID
-app.get('/item/:id', (req, res) => {
+app.get('/categories', (req, res) => {
+    storeService.getCategories()
+        .then(categories => res.render('categories', { categories: categories }))
+        .catch(err => res.render('categories', { message: 'No results' }));
+});
+
+app.get('/shop', (req, res) => {
+    storeService.getPublishedItemsByCategory(req.query.category || null)
+        .then(data => res.render('shop', { data: data }))
+        .catch(err => res.render('shop', { message: 'No results' }));
+});
+
+app.get('/shop/:id', (req, res) => {
     storeService.getItemById(req.params.id)
-        .then((item) => res.json(item))
-        .catch((err) => res.json({ message: err }));
+        .then(data => res.render('shop', { data: data }))
+        .catch(err => res.render('shop', { message: 'No results' }));
 });
 
-// Start the server
+// 404 Route
+app.use((req, res) => res.status(404).render('404'));
+
+// Initialize and start server
 storeService.initialize()
-    .then(() => {
-        app.listen(PORT, () => {
-            console.log(`Express http server listening on port ${PORT}`);
-        });
-    })
-    .catch(err => {
-        console.error("Unable to start server:", err);
-    });
+    .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
+    .catch(err => console.error(`Unable to start server: ${err}`));

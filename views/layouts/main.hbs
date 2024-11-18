@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/main.css">
+    <title>Younes Shaterzadeh's Store</title>
+</head>
+<body>
+    <nav>
+        <ul>
+            {{#navLink "/about"}}About{{/navLink}}
+            {{#navLink "/items"}}Items{{/navLink}}
+            {{#navLink "/categories"}}Categories{{/navLink}}
+            {{#navLink "/shop"}}Shop{{/navLink}}
+            {{#navLink "/items/add"}}Add Item{{/navLink}}
+        </ul>
+    </nav>
+    <div class="container">
+        {{{body}}}
+    </div>
+</body>
+</html>
