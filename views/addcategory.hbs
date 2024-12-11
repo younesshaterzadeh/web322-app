@@ -1,23 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Category</title>
-    <link href="https://unpkg.com/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/main.css">
-</head>
-<body>
-    <div class="container mt-5">
+<div class="row">
+    <div class="col-md-12">
         <h2>Add Category</h2>
-        <hr>
-        <form action="/categories/add" method="POST">
-            <div class="mb-3">
-                <label for="category" class="form-label">Category:</label>
-                <input type="text" class="form-control" id="category" name="category" autofocus required>
+        <br />
+        <form method="post" action="/categories/add">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="category">Category:</label>
+                        <input type="text" class="form-control" id="category" name="category" autofocus />
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-success">Add Category</button>
+            <hr />
+            <input type="submit" class="btn btn-primary pull-right" value="Add Category" /><br /><br /><br />
         </form>
     </div>
-</body>
-</html>
+</div>
